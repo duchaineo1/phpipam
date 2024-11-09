@@ -8,6 +8,7 @@ ARG PHPMAILER_VERSION=6.7.1
 ENV PHPSAML_SOURCE https://github.com/onelogin/php-saml/
 ARG PHPSAML_VERSION=3.4.1
 ENV WEB_REPO /var/www/html
+ARG EXPOSED_PORT=80
 
 # Install required deb packages
 RUN sed -i /etc/apt/sources.list -e 's/$/ non-free'/ && \
@@ -74,4 +75,6 @@ RUN cp ${WEB_REPO}/config.dist.php ${WEB_REPO}/config.php && \
     -e "s/\$gmaps_api_geocode_key.*/\$gmaps_api_geocode_key = getenv(\"GMAPS_API_GEOCODE_KEY\") ?: \"\";/" \
     ${WEB_REPO}/config.php
 
-EXPOSE 80
+RUN sed -i "s/Listen 80/Listen ${EXPOSED_PORT}/g" /etc/apache2/ports.conf
+RUN sed -i "s/*:80/*:${EXPOSED_PORT}/g" /etc/apache2/sites-enabled/000-default.conf
+EXPOSE ${EXPOSED_PORT}
